@@ -880,18 +880,6 @@
     const availW = $('#play').clientWidth;
     stageEl.style.width = Math.max(160, Math.min(availW, availH * 16 / 9, 1100)) + 'px';
   }
-  function lockLandscape(on) {
-    if (!matchMedia('(pointer: coarse)').matches) return;
-    try {
-      if (on) {
-        const p = document.documentElement.requestFullscreen ? document.documentElement.requestFullscreen() : null;
-        Promise.resolve(p).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape')).catch(() => {});
-      } else {
-        if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
-        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-      }
-    } catch (e) {}
-  }
   addEventListener('resize', layout);
   addEventListener('orientationchange', () => setTimeout(layout, 120));
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
@@ -903,14 +891,12 @@
     $('#menu').hidden = true; $('#play').hidden = false; $('#home').hidden = false; ov.hidden = true;
     hint.textContent = hints[m];
     buildCtl(m); inits[m]();
-    lockLandscape(true);
     layout();
   }
   function showMenu() {
     mode = 'menu'; G = null; ov.hidden = true;
     $('#menu').hidden = false; $('#play').hidden = true; $('#home').hidden = true;
     $('#goals').textContent = store.get();
-    lockLandscape(false);
     layout();
   }
   document.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => start(b.dataset.m)));
