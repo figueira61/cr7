@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>html{color-scheme:dark;background:#0c1117}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>The Bench & The Boss</title>
+<title>O Banco & O Mister</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Semi+Condensed:wght@500;700&display=swap">
@@ -143,7 +143,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>The Bench <span>&amp;</span> The Boss</h1>
+    <h1>O Banco <span>&amp;</span> O Mister</h1>
     <div class="tools">
       <button class="mini" id="mute" type="button">Som</button>
       <button class="mini" id="home" type="button" hidden>Menu</button>
@@ -153,17 +153,17 @@
   <div id="menu">
     <p class="lede" style="grid-column:1/-1">Portugal 2–1 Noruega. O capitão ficou no banco, o selecionador manteve a decisão. Escolhe o lado da história.</p>
     <button class="mode" type="button" data-m="cr7">
-      <span class="k">Modo 1</span><span class="n">Warm-Up Frenzy</span>
+      <span class="k">Modo 1</span><span class="n">Frenesim do Aquecimento</span>
       <span class="d">Joga com o capitão. Aquece a martelar no espaço, mas pára quando o mister olha. Chega aos 100% e marca.</span>
       <span class="go">Jogar →</span>
     </button>
     <button class="mode" type="button" data-m="jj">
-      <span class="k">Modo 2</span><span class="n">Tactics &amp; Authority</span>
+      <span class="k">Modo 2</span><span class="n">Tácticas &amp; Autoridade</span>
       <span class="d">Joga com o selecionador. Dá as ordens certas no momento certo e acalma o ego do capitão antes de explodir.</span>
       <span class="go">Jogar →</span>
     </button>
     <button class="mode" type="button" data-m="press">
-      <span class="k">Modo 3</span><span class="n">Press Conference Shield</span>
+      <span class="k">Modo 3</span><span class="n">Conferência de Imprensa</span>
       <span class="d">Seis perguntas incómodas, nove segundos cada. Escolhe a resposta que mantém o balneário em harmonia.</span>
       <span class="go">Jogar →</span>
     </button>
@@ -407,7 +407,7 @@
     G = { sp: 1, sn: 1, min: 60, warm: 8, susp: 0, jj: 'busy', jt: 2.4, phase: 'warm', pt: 0, x: 200, dir: 1, sit: true, since: 9, cheer: 0, scoreFlash: 0, tapped: false, endKind: '', shot: null };
   }
   function actCR7() {
-    const g = G; if (g.over) return;
+    const g = G; if (g.over || g.count > 0) return;
     if (g.phase === 'warm') {
       g.sit = false; g.tapped = true; g.since = 0; g.warm += 4.6;
       beep(380 + g.warm * 3, .04, 'square', .03);
@@ -557,7 +557,7 @@
     G = { sp: 0, sn: 1, min: 60, ego: 18, auth: 55, notes: [], spawn: 1, combo: 0, hits: 0, goals: 0, miss: 0, cd: 0, lf: [0, 0, 0], lc: ['', '', ''], armUp: 0, say: '', sayT: 0, phase: 'play', pt: 0, cheer: 0, scoreFlash: 0, best: 0 };
   }
   function laneJJ(i) {
-    const g = G; if (g.over || g.phase !== 'play') return;
+    const g = G; if (g.over || g.count > 0 || g.phase !== 'play') return;
     let best = null, bd = 999;
     for (const n of g.notes) if (!n.dead && n.lane === i) { const d = Math.abs(n.y - HITY); if (d < 36 && d < bd) { best = n; bd = d; } }
     if (best) {
@@ -571,7 +571,7 @@
     }
   }
   function praiseJJ() {
-    const g = G; if (g.over || g.phase !== 'play' || g.cd > 0) return;
+    const g = G; if (g.over || g.count > 0 || g.phase !== 'play' || g.cd > 0) return;
     g.ego = Math.max(0, g.ego - 24); g.cd = 4.5; g.say = 'Bom trabalho, capitão.'; g.sayT = 1.6;
     floater(150, 280, 'EGO -24', '#3aa0ff'); beep(660, .12, 'triangle', .06);
   }
@@ -664,7 +664,7 @@
     if (typeof layout === 'function') layout();
   }
   function answer(i) {
-    const g = G; if (g.over || g.state !== 'ask') return;
+    const g = G; if (g.over || g.count > 0 || g.state !== 'ask') return;
     const d = i >= 0 ? g.opts[i][1] : -12;
     g.delta = d; g.harm = clamp(g.harm + d, 0, 100); g.state = 'react'; g.rt = 1.5;
     if (d >= 10) { g.reaction = i >= 0 ? 'APLAUSOS NA SALA' : ''; g.rcol = '#35c26a'; g.cheer = 1.2; beep(660, .12, 'triangle', .06); g.good++; }
@@ -890,7 +890,7 @@
     mode = m; parts = []; floaters = []; shake = 0;
     $('#menu').hidden = true; $('#play').hidden = false; $('#home').hidden = false; ov.hidden = true;
     hint.textContent = hints[m];
-    buildCtl(m); inits[m]();
+    buildCtl(m); inits[m](); if (m !== 'siu') G.count = 6;
     layout();
   }
   function showMenu() {
@@ -922,12 +922,20 @@
   function frame(ts) {
     const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; t += dt;
     if (mode !== 'menu' && G && !paused) {
-      if (!G.over || mode === 'press' || mode === 'siu') ({ cr7: updCR7, jj: updJJ, press: updPress, siu: updSIU })[mode](dt);
+      if (G.count > 0) { const b = Math.floor(G.count); G.count -= dt; if (Math.floor(G.count) !== b || G.count <= 0) beep(G.count > 0 ? 440 : 880, .12, 'square', .05); if (G.count <= 0) G.count = -1; }
+      else if (!G.over || mode === 'press' || mode === 'siu') ({ cr7: updCR7, jj: updJJ, press: updPress, siu: updSIU })[mode](dt);
       stepFx(dt);
       ctx.save();
       if (shake > 0 && !RM) ctx.translate(rnd(-1, 1) * shake * 6, rnd(-1, 1) * shake * 6);
       ({ cr7: drawCR7, jj: drawJJ, press: drawPress, siu: drawSIU })[mode]();
       drawFx();
+      if (G.count > 0) {
+        ctx.fillStyle = 'rgba(6,9,14,.62)'; ctx.fillRect(0, 0, W, H);
+        txt('PREPARA-TE', 400, 150, 34, '#fff', 'center', true);
+        const n = Math.floor(G.count), fr = G.count % 1, sc = 1 + fr * .35;
+        ctx.save(); ctx.translate(400, 300); ctx.scale(sc, sc); ctx.globalAlpha = .45 + fr * .55;
+        txt(String(n), 0, 0, 170, '#f2b705', 'center', true); ctx.restore(); ctx.globalAlpha = 1;
+      }
       ctx.restore();
     }
     requestAnimationFrame(frame);
