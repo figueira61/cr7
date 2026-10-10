@@ -282,6 +282,10 @@
     const sl = o.sleeve || o.shirt;
     arm(-11, -52, aL, sl, o.skin); arm(11, -52, aR, sl, o.skin);
     const hy = -69;
+    if (o.longHair) {
+      ctx.fillStyle = o.hair; ctx.beginPath();
+      ctx.moveTo(-11.8, hy - 3); ctx.lineTo(-14, -47); ctx.quadraticCurveTo(0, -43, 14, -47); ctx.lineTo(11.8, hy - 3); ctx.closePath(); ctx.fill();
+    }
     ctx.fillStyle = o.skin; ctx.beginPath(); dot(0, hy, 11); ctx.fill();
     ctx.fillStyle = o.hair;
     if (o.back) { ctx.beginPath(); dot(0, hy, 11.6); ctx.fill(); }
@@ -302,7 +306,7 @@
     ctx.restore();
   }
   const CR7 = (o) => Object.assign({ shirt: '#c8102e', pants: '#0b6b3a', skin: '#e0ac82', hair: '#1c1410', quiff: 1, num: '7' }, o);
-  const JJ = (o) => Object.assign({ shirt: '#1c2a44', suit: true, tie: '#c8102e', pants: '#1c2a44', skin: '#dbb08f', hair: '#aeb3b8' }, o);
+  const JJ = (o) => Object.assign({ shirt: '#1c2a44', suit: true, tie: '#c8102e', pants: '#1c2a44', skin: '#dbb08f', hair: '#aeb3b8', longHair: 1 }, o);
 
   /* ---------- scene pieces ---------- */
   const crowdCols = ['#c8102e', '#0b6b3a', '#d9d9d9', '#c8102e', '#e2b714', '#8a1426'];
