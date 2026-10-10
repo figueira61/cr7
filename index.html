@@ -296,9 +296,9 @@
     if (o.longHair) {
       for (const k of [-1, 1]) {
         ctx.fillStyle = o.hair; ctx.beginPath();
-        ctx.moveTo(k * 10.5, hy - 2); ctx.bezierCurveTo(k * 18, hy + 2, k * 18.5, -53, k * 14, -45.5); ctx.lineTo(k * 10, -50);
-        ctx.bezierCurveTo(k * 7.5, -56, k * 9.5, hy + 6, k * 8.5, hy + 2); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = 'rgba(110,116,112,.6)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(k * 13.2, hy + 2); ctx.lineTo(k * 14, -47); ctx.stroke();
+        ctx.moveTo(k * 10.5, hy - 2); ctx.bezierCurveTo(k * 16.5, hy, k * 16.8, hy + 8, k * 13.4, hy + 11); ctx.lineTo(k * 10.2, hy + 8);
+        ctx.bezierCurveTo(k * 9, hy + 5, k * 9.5, hy + 2, k * 8.5, hy + 2); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(110,116,112,.6)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(k * 13, hy + 1); ctx.lineTo(k * 13.2, hy + 9); ctx.stroke();
       }
     }
     ctx.fillStyle = o.skin;
