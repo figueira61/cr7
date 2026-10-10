@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>html{color-scheme:dark;background:#0c1117}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>The Bench & The Boss</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -100,6 +100,43 @@
   .cb.ans i { font-style: normal; color: var(--gold); margin-right: 8px; }
   #hint { margin: 0; color: var(--muted); font-size: 15px; }
   .fine { margin: 4px 0 0; color: var(--muted); font-size: 13px; line-height: 1.4; opacity: .85; }
+
+  /* play mode: everything fits the viewport, no scroll */
+  #play { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  #ctl { width: 100%; }
+  #hint { width: 100%; }
+  .stage { margin-inline: auto; }
+  .stage .tools { position: absolute; top: 6px; right: 6px; z-index: 3; }
+  .stage .tools { gap: 4px; }
+  .stage .mini { background: rgba(8, 11, 16, .7); padding: 3px 7px; font-size: 11px; letter-spacing: .04em; }
+  body.playing { height: 100vh; height: 100dvh; overflow: hidden; align-items: flex-start; padding-block: 8px;
+    padding-inline: max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-right, 0px)); }
+  body.playing .wrap { max-width: none; gap: 0; }
+  body.playing header { display: none; }
+  #rot { position: fixed; inset: 0; z-index: 50; background: var(--ink); color: var(--gold); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px; }
+  #rot .phone { width: 110px; height: 110px; transform-origin: 50% 50%; animation: turn 2.4s ease-in-out infinite; }
+  #rot .rt { margin: 0; color: var(--chalk); font-family: var(--font-display); font-size: 28px; text-transform: uppercase; line-height: 1.1; text-wrap: balance; }
+  #rot .rs { margin: 0; color: var(--muted); max-width: 32ch; line-height: 1.35; }
+  @keyframes turn { 0%, 20% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
+  @media (prefers-reduced-motion: reduce) { #rot .phone { animation: none; transform: rotate(-90deg); } }
+  @media (max-height: 520px) {
+    .cb { min-height: 44px; padding: 6px 10px; font-size: 15px; }
+    .cb.ans { font-size: 13px; flex: 1 1 0; }
+    #hint { display: none; }
+    .ov { gap: 4px; padding: 6px; }
+    .ov h2 { font-size: clamp(20px, 7vh, 34px); }
+    .ov p { font-size: 13px; }
+    .tag { font-size: 11px; }
+    body:not(.playing) { padding-block: 8px; }
+    h1 { font-size: 26px; }
+    .lede { font-size: 14px; }
+    #menu { gap: 8px; }
+    .mode { padding: 10px; gap: 4px; }
+    .mode .n { font-size: 20px; }
+    .mode .d { font-size: 13px; }
+    .mode .go, .fine { display: none; }
+  }
 </style>
 
 </head>
@@ -108,7 +145,7 @@
   <header>
     <h1>The Bench <span>&amp;</span> The Boss</h1>
     <div class="tools">
-      <button class="mini" id="mute" type="button">Som: ligado</button>
+      <button class="mini" id="mute" type="button">Som</button>
       <button class="mini" id="home" type="button" hidden>Menu</button>
     </div>
   </header>
@@ -142,9 +179,16 @@
       <canvas id="c" aria-label="Campo de jogo"></canvas>
       <div class="ov" id="ov" hidden></div>
     </div>
-    <div id="ctl" style="margin-top:12px"></div>
-    <p id="hint" style="margin-top:10px"></p>
+    <div id="ctl"></div>
+    <p id="hint"></p>
   </div>
+</div>
+
+<div id="rot" hidden role="alert">
+  <svg class="phone" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="19" y="5" width="26" height="54" rx="6"/><path d="M28 52h8"/></svg>
+  <p class="rt">Roda o dispositivo para a horizontal</p>
+  <p class="rs">O jogo funciona em modo paisagem e fica em pausa até rodares.</p>
+  <button class="mini" id="rotMenu" type="button">Voltar ao menu</button>
 </div>
 
 <script>
@@ -202,13 +246,13 @@
     txt(tx, x + w / 2, y + h / 2 + size * .34, size, tcol, 'center', true);
   }
   function bar(x, y, w, h, v, label, col, hot) {
-    txt(label, x, y - 6, 13, '#fff');
+    txt(label, x, y - 5, 16, '#fff');
     ctx.fillStyle = 'rgba(0,0,0,.6)'; rr(x, y, w, h, 4); ctx.fill();
     const fw = clamp(v, 0, 100) / 100 * w;
     ctx.fillStyle = (hot && v > 75 && Math.floor(t * 6) % 2) ? '#fff' : col;
     if (fw > 1) { rr(x, y, fw, h, 4); ctx.fill(); }
     ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1.5; rr(x, y, w, h, 4); ctx.stroke();
-    txt(Math.round(clamp(v, 0, 100)) + '%', x + w - 6, y + h - 3, 12, '#fff', 'right');
+    txt(Math.round(clamp(v, 0, 100)) + '%', x + w - 6, y + h - 5, 14, '#fff', 'right');
   }
 
   /* ---------- characters ---------- */
@@ -439,8 +483,8 @@
     if (g.phase === 'end' && g.endKind === 'time') bubble(540, 232, 200, 40, '#fff', 'APITO FINAL', '#0c1117', 26, 650);
     // HUD
     drawScore();
-    bar(24, 400, 340, 16, g.warm, 'AQUECIMENTO', '#3aa0ff', false);
-    bar(436, 400, 340, 16, g.susp, 'SUSPEITA DO MISTER', '#e5384f', true);
+    bar(24, 398, 340, 22, g.warm, 'AQUECIMENTO', '#3aa0ff', false);
+    bar(436, 398, 340, 22, g.susp, 'SUSPEITA DO MISTER', '#e5384f', true);
     if (g.phase === 'warm' && !g.tapped && Math.floor(t * 2.5) % 2) txt('CARREGA EM ESPAÇO PARA AQUECER', 400, 150, 26, '#fff', 'center', true);
     if (g.phase === 'warm' && g.jj === 'watch') txt('O MISTER ESTÁ A OLHAR. PÁRA!', 400, 150, 28, '#e5384f', 'center', true);
   }
@@ -589,11 +633,11 @@
     if (g.phase === 'end' && g.endKind === 'whistle') bubble(520, 232, 200, 38, '#fff', 'APITO FINAL', '#0c1117', 26, 650);
     drawScore();
     if (g.combo >= 3) txt(`SEQUÊNCIA ×${g.combo}`, 400, 108 + 22, 22, '#f2b705', 'center', true);
-    bar(24, 408, 340, 16, g.ego, 'EGO DO CAPITÃO', '#ff9800', true);
-    bar(436, 408, 340, 16, g.auth, 'AUTORIDADE', '#3aa0ff', false);
+    bar(24, 404, 340, 22, g.ego, 'EGO DO CAPITÃO', '#ff9800', true);
+    bar(436, 404, 340, 22, g.auth, 'AUTORIDADE', '#3aa0ff', false);
     // praise cooldown
-    ctx.fillStyle = g.cd > 0 ? 'rgba(255,255,255,.18)' : '#f2b705'; rr(24, 430, 340, 6, 3); ctx.fill();
-    if (g.cd > 0) { ctx.fillStyle = '#f2b705'; rr(24, 430, 340 * (1 - g.cd / 4.5), 6, 3); ctx.fill(); }
+    ctx.fillStyle = g.cd > 0 ? 'rgba(255,255,255,.18)' : '#f2b705'; rr(24, 434, 340, 6, 3); ctx.fill();
+    if (g.cd > 0) { ctx.fillStyle = '#f2b705'; rr(24, 434, 340 * (1 - g.cd / 4.5), 6, 3); ctx.fill(); }
   }
 
   /* =================== MODE 3: PRESS CONFERENCE SHIELD =================== */
@@ -617,6 +661,7 @@
       const b = document.createElement('button'); b.type = 'button'; b.className = 'cb ans'; b.innerHTML = `<i>${i + 1}</i>`; b.append(o[0]);
       b.addEventListener('click', () => answer(i)); ctl.appendChild(b);
     });
+    if (typeof layout === 'function') layout();
   }
   function answer(i) {
     const g = G; if (g.over || g.state !== 'ask') return;
@@ -672,14 +717,14 @@
     // harmony meter
     const mx = 160, mw = 480, my = 18;
     const gr = ctx.createLinearGradient(mx, 0, mx + mw, 0); gr.addColorStop(0, '#e5384f'); gr.addColorStop(.5, '#f2b705'); gr.addColorStop(1, '#35c26a');
-    txt('HARMONIA DO BALNEÁRIO', 400, my - 4, 13, '#fff', 'center');
+    txt('HARMONIA DO BALNEÁRIO', 400, my - 4, 15, '#fff', 'center');
     ctx.fillStyle = gr; rr(mx, my, mw, 14, 7); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 2; rr(mx, my, mw, 14, 7); ctx.stroke();
     ctx.fillStyle = '#fff'; ctx.fillRect(mx + mw * .6 - 1, my - 3, 2, 20);
     const nx = mx + g.disp / 100 * mw;
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(nx - 8, my + 26); ctx.lineTo(nx + 8, my + 26); ctx.lineTo(nx, my + 15); ctx.fill();
-    txt('60% para vencer', mx + mw * .6, my + 40, 12, '#cfd8e3', 'center');
-    txt(`Pergunta ${Math.min(g.q + 1, QUESTIONS.length)}/${QUESTIONS.length}`, 24, 34, 14, '#cfd8e3');
+    txt('60% para vencer', mx + mw * .6, my + 42, 14, '#cfd8e3', 'center');
+    txt(`Pergunta ${Math.min(g.q + 1, QUESTIONS.length)}/${QUESTIONS.length}`, 24, 34, 17, '#cfd8e3');
     // question bubble
     const lines = wrap(QUESTIONS[Math.min(g.q, QUESTIONS.length - 1)].q, 540, 22);
     const bh = 24 + lines.length * 28, by = 84;
@@ -818,23 +863,60 @@
       add('Elogiar (Espaço)', 'alt', praiseJJ);
     }
   }
+  const rot = $('#rot'), tools = document.querySelector('.tools'), header = document.querySelector('header'), stageEl = document.querySelector('.stage');
+  let paused = false;
+  function layout() {
+    const play = mode !== 'menu';
+    document.body.classList.toggle('playing', play);
+    if (play && tools.parentNode !== stageEl) stageEl.appendChild(tools);
+    if (!play && tools.parentNode !== header) header.appendChild(tools);
+    const coarse = matchMedia('(pointer: coarse)').matches, portrait = innerHeight > innerWidth;
+    rot.hidden = !(play && coarse && portrait); paused = !rot.hidden;
+    if (!play) { stageEl.style.width = ''; return; }
+    const cs = getComputedStyle(document.body);
+    const padV = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const hintH = hint.offsetParent ? hint.offsetHeight + 8 : 0;
+    const availH = innerHeight - padV - ctl.offsetHeight - 8 - hintH;
+    const availW = $('#play').clientWidth;
+    stageEl.style.width = Math.max(160, Math.min(availW, availH * 16 / 9, 1100)) + 'px';
+  }
+  function lockLandscape(on) {
+    if (!matchMedia('(pointer: coarse)').matches) return;
+    try {
+      if (on) {
+        const p = document.documentElement.requestFullscreen ? document.documentElement.requestFullscreen() : null;
+        Promise.resolve(p).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape')).catch(() => {});
+      } else {
+        if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      }
+    } catch (e) {}
+  }
+  addEventListener('resize', layout);
+  addEventListener('orientationchange', () => setTimeout(layout, 120));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+  $('#rotMenu').addEventListener('click', () => showMenu());
+
   function start(m) {
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     mode = m; parts = []; floaters = []; shake = 0;
     $('#menu').hidden = true; $('#play').hidden = false; $('#home').hidden = false; ov.hidden = true;
     hint.textContent = hints[m];
     buildCtl(m); inits[m]();
-    $('#play').scrollIntoView({ block: 'nearest' });
+    lockLandscape(true);
+    layout();
   }
   function showMenu() {
     mode = 'menu'; G = null; ov.hidden = true;
     $('#menu').hidden = false; $('#play').hidden = true; $('#home').hidden = true;
     $('#goals').textContent = store.get();
+    lockLandscape(false);
+    layout();
   }
   document.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => start(b.dataset.m)));
   $('#home').addEventListener('click', showMenu);
   $('#siuPrev').addEventListener('click', () => { siuPreview = true; start('siu'); });
-  $('#mute').addEventListener('click', e => { muted = !muted; e.currentTarget.textContent = 'Som: ' + (muted ? 'desligado' : 'ligado'); });
+  $('#mute').addEventListener('click', e => { muted = !muted; e.currentTarget.textContent = muted ? 'Mudo' : 'Som'; });
 
   const KEYS = { ArrowLeft: 0, KeyA: 0, ArrowDown: 1, KeyS: 1, ArrowRight: 2, KeyD: 2 };
   document.addEventListener('keydown', e => {
@@ -853,7 +935,7 @@
 
   function frame(ts) {
     const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; t += dt;
-    if (mode !== 'menu' && G) {
+    if (mode !== 'menu' && G && !paused) {
       if (!G.over || mode === 'press' || mode === 'siu') ({ cr7: updCR7, jj: updJJ, press: updPress, siu: updSIU })[mode](dt);
       stepFx(dt);
       ctx.save();
